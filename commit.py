@@ -1,9 +1,17 @@
 import subprocess
 import write
 import random
-import time
+from apscheduler.schedulers.blocking import BlockingScheduler
 
-text = random.randint(0,99999)
-write.write("file.txt",text)
-time.sleep(1)
-subprocess.run('git add file.txt', shell=True)
+sched = BlockingScheduler()
+
+@sched.scheduled_job('cron', day_of_week='mon-sun', hour=10)
+def scheduled_job():
+    for _ in range(random.randint(1,3)):
+        text = random.randint(0,99999)
+        write.write("file.txt",text)
+        subprocess.run('git add file.txt', shell=True)
+        subprocess.run('git commit -m "new commit"', shell=True)
+        subprocess.run('git push', shell=True)
+
+sched.start()
